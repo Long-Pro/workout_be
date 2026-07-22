@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(255)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  workouts Workout[]
+
+  @@map("users")
+}
+
+model Exercise {
+  id             String    @id @default(uuid()) @db.Uuid
+  name           String    @db.VarChar(255)
+  normalizedName String    @unique(map: "uq_exercises_normalized_name") @map("normalized_name") @db.VarChar(255)
+  description    String?
+  muscleGroup    String?   @map("muscle_group") @db.VarChar(100)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  workoutExercises WorkoutExercise[]
+
+  @@map("exercises")
+}
+
+model Workout {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  performedAt DateTime @map("performed_at") @db.Timestamptz(3)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user             User              @relation(fields: [userId], references: [id])
+  workoutExercises WorkoutExercise[]
+
+  @@map("workouts")
+}
+
+model WorkoutExercise {
+  id         String   @id @default(uuid()) @db.Uuid
+  workoutId  String   @map("workout_id") @db.Uuid
+  exerciseId String   @map("exercise_id") @db.Uuid
+  order      Int
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  workout  Workout                @relation(fields: [workoutId], references: [id])
+  exercise Exercise               @relation(fields: [exerciseId], references: [id])
+  entries  WorkoutExerciseEntry[]
+
+  @@unique([workoutId, order], map: "uq_workout_exercises_workout_id_order")
+  @@map("workout_exercises")
+}
+
+model WorkoutExerciseEntry {
+  id                  String   @id @default(uuid()) @db.Uuid
+  workoutExerciseId   String   @map("workout_exercise_id") @db.Uuid
+  order               Int
+  reps                Int
+  normalizedWeightKg  Decimal  @map("normalized_weight_kg") @db.Decimal(10, 3)
+  originalWeightValue Decimal  @map("original_weight_value") @db.Decimal(10, 3)
+  originalWeightUnit  String   @map("original_weight_unit")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  workoutExercise WorkoutExercise @relation(fields: [workoutExerciseId], references: [id])
+
+  @@unique([workoutExerciseId, order], map: "uq_workout_exercise_entries_workout_exercise_id_order")
+  @@map("workout_exercise_entries")
+}
