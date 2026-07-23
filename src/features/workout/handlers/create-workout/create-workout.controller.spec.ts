@@ -12,14 +12,15 @@ import {
 } from '@jest/globals';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { CreateWorkoutCommand } from './handlers/create-workout/create-workout.command';
-import { CreateWorkoutInput } from './handlers/create-workout/create-workout.input';
-import { WorkoutController } from './workout.controller';
+import { WorkoutController } from '../../workout.controller';
+import { CreateWorkoutCommand } from './create-workout.command';
+import { CreateWorkoutInput } from './create-workout.input';
+import { WeightUnit } from '../../../../utils/weight';
 
 const USER_ID = '10000000-0000-4000-8000-000000000001';
 const EXERCISE_ID = '20000000-0000-4000-8000-000000000001';
 
-describe('Workout API (e2e)', () => {
+describe('POST /workouts', () => {
   const commandBus = {
     execute: jest.fn<(command: unknown) => Promise<boolean>>(),
   };
@@ -35,7 +36,7 @@ describe('Workout API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
   });
 
@@ -47,14 +48,14 @@ describe('Workout API (e2e)', () => {
     await app.close();
   });
 
-  it('POST /workouts returns true for a valid workout', async () => {
+  it('returns true for a valid workout', async () => {
     commandBus.execute.mockResolvedValue(true);
     const input: CreateWorkoutInput = {
       userId: USER_ID,
       exercises: [
         {
           exerciseId: EXERCISE_ID,
-          sets: [{ reps: 10, weight: 100.5, unit: 'lb' }],
+          sets: [{ reps: 10, weight: 100.5, unit: WeightUnit.LB }],
         },
       ],
     };
@@ -97,7 +98,7 @@ describe('Workout API (e2e)', () => {
         ],
       },
     ],
-  ])('POST /workouts rejects %s', async (_caseName, override) => {
+  ])('rejects %s', async (_caseName, override) => {
     const validInput = {
       userId: USER_ID,
       exercises: [

@@ -11,6 +11,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import { CreateWorkoutCommand } from './create-workout.command';
 import { CreateWorkoutHandler } from './create-workout.handler';
 import { CreateWorkoutInput } from './create-workout.input';
+import { WeightUnit } from '../../../../utils/weight';
 
 const USER_ID = '10000000-0000-4000-8000-000000000001';
 const SQUAT_ID = '20000000-0000-4000-8000-000000000001';
@@ -36,13 +37,13 @@ describe('CreateWorkoutHandler', () => {
       {
         exerciseId: SQUAT_ID,
         sets: [
-          { reps: 10, weight: 100, unit: 'lb' },
-          { reps: 8, weight: 50.5, unit: 'kg' },
+          { reps: 10, weight: 100, unit: WeightUnit.LB },
+          { reps: 8, weight: 50.5, unit: WeightUnit.KG },
         ],
       },
       {
         exerciseId: BENCH_ID,
-        sets: [{ reps: 5, weight: 120, unit: 'kg' }],
+        sets: [{ reps: 5, weight: 120, unit: WeightUnit.KG }],
       },
     ],
   };
@@ -97,7 +98,7 @@ describe('CreateWorkoutHandler', () => {
                   {
                     order: 1,
                     reps: 10,
-                    normalizedWeightKg: 45.359237,
+                    normalizedWeightKg: 45.359,
                     originalWeightValue: 100,
                     originalWeightUnit: 'lb',
                   },

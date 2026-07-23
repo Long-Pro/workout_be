@@ -10,7 +10,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { WeightUnit, WEIGHT_UNITS } from '../../utils/weight';
+import { WeightUnit, WEIGHT_UNITS } from '../../../../utils/weight';
 
 export class CreateWorkoutSetInput {
   @ApiProperty({ example: 10, minimum: 1 })

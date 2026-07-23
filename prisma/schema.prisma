@@ -50,6 +50,7 @@ model Workout {
   user             User              @relation(fields: [userId], references: [id])
   workoutExercises WorkoutExercise[]
 
+  @@index([userId, performedAt(sort: Desc), id(sort: Desc)], map: "idx_workouts_user_performed_id")
   @@map("workouts")
 }
 

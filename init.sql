@@ -75,6 +75,9 @@ CREATE TABLE workout_exercise_entries (
     UNIQUE (workout_exercise_id, "order")
 );
 
+CREATE INDEX idx_workouts_user_performed_id
+  ON workouts (user_id, performed_at DESC, id DESC);
+
 INSERT INTO users (id, name, created_at, updated_at)
 VALUES
   ('10000000-0000-4000-8000-000000000001', 'Alice Nguyen', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),

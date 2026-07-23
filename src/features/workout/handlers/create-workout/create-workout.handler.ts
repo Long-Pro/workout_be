@@ -1,8 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from 'src/database/prisma.service';
-import { convertWeightToKg } from '../../utils/weight';
 import { CreateWorkoutCommand } from './create-workout.command';
+import { convertWeight, WeightUnit } from '../../../../utils/weight';
 
 @CommandHandler(CreateWorkoutCommand)
 export class CreateWorkoutHandler implements ICommandHandler<CreateWorkoutCommand> {
@@ -49,7 +49,11 @@ export class CreateWorkoutHandler implements ICommandHandler<CreateWorkoutComman
               create: exercise.sets.map((set, setIndex) => ({
                 order: setIndex + 1,
                 reps: set.reps,
-                normalizedWeightKg: convertWeightToKg(set.weight, set.unit),
+                normalizedWeightKg: convertWeight(
+                  set.weight,
+                  set.unit,
+                  WeightUnit.KG,
+                ),
                 originalWeightValue: set.weight,
                 originalWeightUnit: set.unit,
               })),
