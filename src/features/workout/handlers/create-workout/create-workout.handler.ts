@@ -1,13 +1,20 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Transactional, TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateWorkoutCommand } from './create-workout.command';
 import { convertWeight, WeightUnit } from '../../../../utils/weight';
 
 @CommandHandler(CreateWorkoutCommand)
 export class CreateWorkoutHandler implements ICommandHandler<CreateWorkoutCommand> {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly txHost: TransactionHost<
+      TransactionalAdapterPrisma<PrismaService>
+    >,
+  ) {}
 
+  @Transactional()
   async execute(command: CreateWorkoutCommand) {
     const { input } = command;
     const { userId, exercises } = input;
@@ -16,11 +23,11 @@ export class CreateWorkoutHandler implements ICommandHandler<CreateWorkoutComman
       ...new Set(exercises.map(({ exerciseId }) => exerciseId)),
     ];
     const [user, existingExercises] = await Promise.all([
-      this.prisma.user.findFirst({
+      this.txHost.tx.user.findFirst({
         where: { id: userId, deletedAt: null },
         select: { id: true },
       }),
-      this.prisma.exercise.findMany({
+      this.txHost.tx.exercise.findMany({
         where: {
           id: {
             in: uniqueExerciseIds,
@@ -37,7 +44,7 @@ export class CreateWorkoutHandler implements ICommandHandler<CreateWorkoutComman
       throw new NotFoundException(`Some exercises were not found`);
     }
 
-    await this.prisma.workout.create({
+    await this.txHost.tx.workout.create({
       data: {
         userId,
         performedAt: new Date(),
