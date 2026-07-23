@@ -24,6 +24,9 @@ export function IsAfterOrEqualTo(
           const relatedValue = (args.object as Record<string, unknown>)[
             relatedPropertyName
           ];
+          if (relatedValue === undefined || relatedValue === null) {
+            return true;
+          }
           if (!(value instanceof Date) || !(relatedValue instanceof Date)) {
             return false;
           }
